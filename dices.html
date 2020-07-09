@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dices!</title>
+        <meta charset="utf-8">
+        <meta name="version" content="5.3">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href='https://fonts.googleapis.com/css?family=Satisfy' rel='stylesheet'>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <style>
+            * {font-family: "Century Gothic",sans-serif;}
+            body {background-color: #A5F5EE;}
+            #content {width: 500px; border-radius: 5px; margin: auto; margin-top: 15px; background-color: #FFFFFF; padding: 15px; text-align: center;}
+            
+            h1 {font-size: 5em; font-family: "Satisfy","Century Gothic",sans-serif; margin-bottom: 0;}
+            button {font-size: 1.3em; margin: 5px; background-color: #77E6DE; border-radius: 7px; border: none; padding: 7px; font-family: "Satisfy","Century Gothic",sans-serif;}
+            button * {font-family: "Satisfy","Century Gothic",sans-serif;}
+            button:hover {background-color: #A5F5EF; box-shadow: 0 0 15px #109F95; transition-duration: 0.45s; cursor: pointer;}
+            button:focus {outline: none;}
+            input[type=number] {width: 50px;}
+            
+            #buttons {width: 80%; margin: auto; margin-top: 10px;}
+            #display {font-size: 4em; font-family: "Satisfy","Century Gothic",sans-serif; height: 75px; margin: 15px 0 15px 0;}
+            /* VERSION BOX STYLE - NOT IN USE
+            #version {position: fixed; top: 0; right: 0; border-bottom-left-radius: 7px; padding: 15px; background-color: #FFFFFF;}
+            #changes_div {width: 275px; margin-top: 10px;}*/
+            #cc {position: fixed; top: 0; right: 0; border-bottom-left-radius: 7px; padding: 15px; background-color: #FFFFFF; text-align: right;}
+            #ccText {font-weight: bold;}
+            #cc_div {width: 300px;}
+            #log {transform: rotate(180deg); width: 80%; margin-left: 40px; text-align: left;}
+            #log li {transform: rotate(-180deg); margin-bottom: 20px; font-size: 1.25em;}
+            #log li:first-letter {text-transform: uppercase;}
+            #customDice_div * {font-family: "Satisfy","Century Gothic",sans-serif; font-size: 1em;}
+            #customDice_div p {font-size: 1.5em;}
+            #timerStuff {position: fixed; top: 0; left: 0;}
+            #addTimer_div {border-bottom-right-radius: 7px; background-color: #FFFFFF;}
+            #timerText {padding: 15px; font-weight: bold;}
+            #timerInfo {width: 300px; padding: 15px; padding-top: 0;}
+            
+            .trade {font-size: 0.2em; position: relative; top: -50px; right: -10px;}
+            .smaller {font-size: 0.7em; display: block;}
+            .hover:hover {box-shadow: 0 0 15px #109F95; transition-duration: 0.45s; cursor: pointer;}
+            .feedback {color: red; font-weight: bold;}
+            .timer {background-color: #FFFFFF; padding: 15px; border-top-right-radius: 7px; border-bottom-right-radius: 7px; margin-top: 10px; width: 300px; position: relative;}
+            .timerName {font-weight: bold;}
+            .timerTime {font-size: 3em; font-family: "Satisfy","Century Gothic",sans-serif;}
+        </style>
+    </head>
+    <body id="body">
+        <!-- VERSION BOX - NOT IN USE
+        <div id="version" class="hover">
+            <strong>v6.1</strong>
+            <div id="toggle">
+                <div id="changes_div">
+                    Changes applied since v5.0:
+                    <ul id="changes"></ul>
+                </div>
+            </div>
+        </div> -->
+        <div id="cc" class="hover">
+            <div id="ccText">Character Creation</div>
+            <div id="ccToggle">
+                <div id="cc_div">
+                    TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST TEST
+                    <div id="abilities_div">TEST TEST TEST TEST TEST</div>
+                    <button id="closeCC_btn">Close CC panel</button>
+                </div>
+            </div>
+        </div>
+        <div id="timerStuff">
+            <div id="addTimer_div" class="hover">
+                <div id="timerText">Add timer</div>
+                <div id="timerToggle">
+                    <div id="timerInfo">
+                        <p>Name (optional): <input id="name"></p>
+                        <p>Duration: <input id="mins" type="number"> min <input id="secs" type="number"> sec</p>
+                        <p id="tFeedback" class="feedback"></p>
+                        <button id="addTimer">Add timer</button><button id="cancelAdd">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <div id="timers"></div>
+        </div>
+        <div id="content">
+            <h1>Dices!!!<span class="trade">&trade;</span></h1>
+            <p>I wanna roll the dice <input id="count" type="number" min="1" value="1"> time(s)</p>
+            <p>I wanna add <input id="add" type="number" value="0"> to
+                <select id="addTo">
+                    <option value="final">the final result</option>
+                    <option value="every">every roll</option>
+                </select>
+            </p>
+            <p>Add roll info (optional):</p>
+            <input id="player" placeholder="Player/NPC">
+            <input id="roll" placeholder="Roll type">
+            <div id="buttons">
+                <button onclick="throwDice(3)">D3</button>
+                <button onclick="throwDice(4)">D4</button>
+                <button onclick="throwDice(6)">D6</button>
+                <button onclick="throwDice(8)">D8</button>
+                <button onclick="throwDice(10)">D10</button>
+                <button onclick="throwDice(12)">D12</button>
+                <button onclick="throwDice(20)">D20</button>
+                <button onclick="throwDice(66)">D66</button>
+                <button onclick="throwDice(100)">D100</button>
+                <button onclick="throwDice(10000)">D10000</button>
+                <button onclick="throwDice('CC')"><abbr title="Character Creation (Ctrl+Shift+i after a roll to see how it works)">CC</abbr></button>
+                <button id="toggleCustom">Custom</button>
+                <div id="customDice_div">
+                    <p>D<input id="customDice" type="number" value="1">
+                    <button onclick="throwDice('custom')">Roll</button></p>
+                </div>
+            </div>
+            <p id="display"></p>
+            <p id="dFeedback" class="feedback"></p>
+            <button id="toggleLog">Hide/show log</button>
+            <div id="log_div"><ol id="log"></ol></div>
+            <audio id="notif" src="pianotune.mp3"></audio>
+            <script>
+                //GENERAL FUNCTIONS
+                //Function for getting a random number between a min and max limit
+                function randomNumber(min,max) {
+                    var number = Math.floor(Math.random() * (max-min+1)) + min;
+                    return number;
+                }
+                
+                //Function for adding together all numbers of an array
+                function arraySum(array) {
+                    var sum = 0;
+                    for(var i = 0; i < array.length; i++) {
+                        sum += array[i];
+                    }
+                    return sum;
+                }
+                
+                //Function for finding the index of the smallest number of an array
+                function smallestElIndex(array) {
+                    var smallestNumId = 0;
+                    var smallestNumber = array[0];
+                    for(var i = 0; i < array.length; i++) {
+                        if(array[i] < smallestNumber) {
+                            smallestNumber = array[i];
+                            smallestNumId = i;
+                        }
+                    }
+                    console.log("Smallest: " + smallestNumber);
+                    return smallestNumId;
+                }
+                
+                //Function for checking if a number is whole
+                function wholeNumber(number) {
+                    if(number == Math.round(number)){
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+                
+                /* //VERSION BOX - NOT IN USE
+                //Adding animation to the box with jQuery when clicked
+                $('#toggle').hide();
+                $('#version').click(function(){$('#toggle').toggle(500);});
+                
+                //Function for adding a change to the list of changes
+                function addChange(change){
+                    var li = document.createElement("li");
+                    li.innerHTML = change;
+                    document.getElementById("changes").appendChild(li);
+                }
+                
+                //Adding changes
+                addChange("Replaced the seperate dice functions with a single dice function");
+                addChange("Added the roll log");
+                addChange("Added the roll info functionality");
+                addChange("Added the roll count functionality");
+                addChange("Minor improvements and fixes");
+                addChange("Added the individual rolls to the log");
+                addChange("Added the possibility to add X to the final result/every roll");
+                addChange("Log design improvements");
+                addChange("Added the custom dice");
+                addChange("Custom dice bug fixes");
+                addChange("Added timers");
+                addChange("Added the CC dice");
+                addChange("Design improvements"); */
+                
+                //INPUTS
+                //Input element variables
+                var playerInput = document.getElementById("player");
+                var typeInput = document.getElementById("roll");
+                var addInput = document.getElementById("add");
+                var countInput = document.getElementById("count");
+                var tNameInput = document.getElementById("name");
+                var tMinInput = document.getElementById("mins");
+                var tSecInput = document.getElementById("secs");
+                
+                //Input value variables
+                var player;
+                var rollType;
+                var add;
+                var addTo;
+                var count;
+                var customDice;
+                var tName;
+                var tMin;
+                var tSec;
+                
+                //Functions for refreshing input variables
+                function refreshInputs() {
+                    player = playerInput.value;
+                    rollType = typeInput.value;
+                    add = Number(addInput.value);
+                    addTo = document.getElementById('addTo').value;
+                    count = Number(countInput.value);
+                    customDice = Number(document.getElementById("customDice").value);
+                }
+                
+                function refreshTimerInputs() {
+                    tName = tNameInput.value;
+                    tMin = Number(tMinInput.value);
+                    tSec = Number(tSecInput.value);
+                }
+                
+                //Functions for resetting input element values
+                function resetInputs() {
+                    playerInput.value = "";
+                    typeInput.value = "";
+                    addInput.value = 0;
+                    countInput.value = 1;
+                }
+                
+                function resetTimerInputs() {
+                    tNameInput.value = "";
+                    tMinInput.value = "";
+                    tSecInput.value = "";
+                }
+                
+                //TIMERS
+                var timers = [];
+                var timerIndex = 0;
+                var tFeedback = document.getElementById('tFeedback');
+                
+                //Function for playing the notification sound
+                function playSnd() {
+                    document.getElementById('notif').play();
+                }
+                
+                //Timer class
+                function Timer(name,minutes,seconds) {
+                    this.index = timerIndex;
+                    this.id = 'timer' + this.index;
+                    this.name = name;
+                    this.dur = minutes*60+seconds;
+                    this.timeLeft = this.dur;
+                    this.display;
+                    this.timeInterval;
+                    this.createTimer = function() {
+                        var timerEl = document.createElement('div');
+                        timerEl.setAttribute('id',this.id);
+                        timerEl.setAttribute('class','timer');
+                        timerEl.innerHTML = "<span class='timerName'>" + this.name + "</span>";
+                        this.display = document.createElement('div');
+                        this.display.setAttribute('class','timerTime');
+                        timerEl.appendChild(this.display);
+                        var pauseCont = document.createElement('button');
+                        pauseCont.setAttribute('id','pauseCont' + this.index);
+                        var paused = false;
+                        var thisTimer = timers[this.index];
+                        pauseCont.addEventListener('click', function() {
+                            if(!paused){
+                                thisTimer.stopTimer();
+                                thisTimer.display.style.color = "grey";
+                                paused = true;
+                            }
+                            else {
+                                thisTimer.startTimer();
+                                thisTimer.display.style.color = "black";
+                                paused = false;
+                            }
+                        });
+                        pauseCont.innerHTML = "Pause/continue";
+                        timerEl.appendChild(pauseCont);
+                        var remove = document.createElement('button');
+                        remove.addEventListener('click',function() {
+                            thisTimer.removeTimer();
+                        });
+                        remove.innerHTML = "Remove";
+                        timerEl.appendChild(remove);
+                        document.getElementById('timers').appendChild(timerEl);
+                        $('#' + this.id).hide().slideDown(250);
+                    }
+                    this.displayTime = function() {
+                        var mins = Math.floor(this.timeLeft/60);
+                        var secs = this.timeLeft % 60;
+                        this.display.innerHTML = mins + " min " + secs + " sec";
+                    }
+                    this.startTimer = function() {
+                        var thisTimer = timers[this.index];
+                        this.timeInterval = setInterval(function() {
+                            thisTimer.timeLeft--;
+                            thisTimer.displayTime();
+                            if(thisTimer.timeLeft <= 0){
+                                thisTimer.stopTimer();
+                                $('#pauseCont' + thisTimer.index).hide(250);
+                                setTimeout(function() {
+                                    $('#pauseCont' + thisTimer.index).remove();
+                                },250);
+                                playSnd();
+                            }
+                        },1000);
+                    }
+                    this.timerSetup = function() {
+                        this.createTimer();
+                        this.displayTime();
+                        this.startTimer(timers[this.index]);
+                    }
+                    this.stopTimer = function() {
+                        clearInterval(this.timeInterval);
+                    }
+                    this.removeTimer = function() {
+                        $('#' + this.id).hide(250);
+                        var thisTimer = timers[this.index];
+                        setTimeout(function() {
+                            thisTimer.stopTimer();
+                            $('#' + thisTimer.id).remove();
+                            timers.splice(thisTimer.index, 1);
+                            updateIndexes();
+                        },250);
+                    }
+                }
+                
+                //Function for adding a new timer
+                function addTimer(name,minutes,seconds){
+                    timers[timerIndex] = new Timer(name,minutes,seconds);
+                    timers[timerIndex].timerSetup();
+                    timerIndex++;
+                }
+                
+                //Function for updating the index for each instance of Timer
+                function updateIndexes() {
+                    for(timerIndex = 0; timerIndex < timers.length; timerIndex++){
+                        timers[timerIndex].index = timerIndex;
+                    }
+                }
+                
+                //Adding the animation stuffs for the "Add timer"
+                $('#timerToggle').hide();
+                var timerOpen = false;
+                
+                $('#addTimer_div').click(function() {
+                    if(!timerOpen){
+                        $('#timerToggle').show(500);
+                        $('#timerText').animate({fontSize: '1.5em'},500);
+                        $('#addTimer_div').removeClass('hover');
+                        timerOpen = true;
+                    }
+                });
+                
+                function closeTimerAdder() {
+                    $('#timerToggle').hide(300);
+                    $('#timerText').animate({fontSize: '1em'},300);
+                    setTimeout(function() {
+                        $('#addTimer_div').addClass('hover');
+                        timerOpen = false;
+                    },500);
+                    resetTimerInputs();
+                    tFeedback.innerHTML = "";
+                }
+                
+                $('#addTimer').click(function() {
+                    refreshTimerInputs();
+                    if((tMin || tSec) && wholeNumber(tMin) && wholeNumber(tSec) && tMin >= 0 && tSec >= 0){
+                        addTimer(tName,tMin,tSec);
+                        closeTimerAdder();
+                    }
+                    else {
+                        tFeedback.innerHTML = "Please fill in both the minute input and the second input, and make sure that you enter whole numbers above or equal to 0 (both cannot be 0).";
+                    }
+                });
+                
+                $('#cancelAdd').click(function() {
+                    resetTimerInputs();
+                    closeTimerAdder();
+                });
+                
+                //CHARACTER CREATION DICE
+                //Adding the animation stuffs for the panel
+                $('#ccToggle').hide();
+                ccOpen = false;
+                
+                $('#cc').click(function(){
+                    if(!ccOpen){
+                        $('#ccToggle').show(500);
+                        $('#ccText').animate({fontSize: '1.5em'},500);
+                        $('#cc').removeClass('hover');
+                        ccOpen = true;
+                    }
+                });
+                
+                $('#closeCC_btn').click(function(){
+                    $('#ccToggle').hide(300);
+                    $('#ccText').animate({fontSize: '1em'},300);
+                    setTimeout(function() {
+                        $('#cc').addClass('hover');
+                        ccOpen = false;
+                    },500);
+                })
+                
+                var characters = [];
+                var charIndex = 0;
+                
+                function Character(name,str,dex,con,int,wis,cha) {
+                    this.name = name;
+                    this.str = str;
+                    this.dex = dex;
+                    this.con = con;
+                    this.int = int;
+                    this.wis = wis;
+                    this.cha = cha;
+                }
+                
+                var abilities = [];
+                var abIndex = 0;
+                
+                function Ability(name,short) {
+                    this.index = abIndex;
+                    this.name = name;
+                    this.short = short;
+                    
+                    this.createAbility = function() {
+                        var abDiv = document.getElementById('abilities_div');
+                        var checkEl = document.createElement('input');
+                        checkEl.setAttribute('id',this.index);
+                        checkEl.setAttribute('type','checkbox');
+                        var labelEl = document.createElement('label');
+                        
+                    }
+                }
+                
+                
+                //LOG
+                //Adding the show/hide log function to the button
+                $('#toggleLog').click(function(){$('#log_div').slideToggle(500);});
+                
+                //Function for logging a roll
+                function logRoll(result,rolls, dice) {
+                    if(dice != "CC"){dice = "D" + dice}
+                    var li = document.createElement("li");
+                    var log = "";
+                    if(player){
+                        log += player + "'s ";
+                    }
+                    if(rollType){
+                        log += rollType + " ";
+                    }
+                    log += "roll: <strong>" + result + "</strong><span class='smaller'>";
+                    if(add != 0){
+                        if(addTo == "final"){
+                            log += rolls.length + dice + "+" + add;
+                        }
+                        else {
+                            log += rolls.length + "(" + dice + "+" + add + ")";
+                        }
+                    }
+                    else {
+                        log += rolls.length + dice;
+                    }
+                    log += ", <strong>" + rolls.join(" - ") + "</strong></span>";
+                    li.innerHTML = log;
+                    document.getElementById("log").appendChild(li);
+                }
+                
+                //DICES
+                var display = document.getElementById("display");
+                var dFeedback = document.getElementById('dFeedback');
+                
+                //Function for the dies
+                function throwDice(dice) {
+                    refreshInputs();
+                    resetInputs();
+                    display.innerHTML = "";
+                    dFeedback.innerHTML = "";
+                    if(count >= 1 && wholeNumber(count) && customDice >= 1 && wholeNumber(customDice)){
+                        var result = 0;
+                        var allRolls = [];
+                        for(var i = 0; i < count; i++) {
+                            var roll = "";
+                            switch(dice) {
+                                case 66:
+                                    for(var j = 0; j < 2; j++) {
+                                        roll += randomNumber(1,6);
+                                    }
+                                    break;
+                                case "CC":
+                                    var ccRolls = [];
+                                    console.log('CC ROLL');
+                                    for(var j = 1; j <= 4; j++){
+                                        var ccRoll = randomNumber(1,6);
+                                        ccRolls.push(ccRoll);
+                                        console.log("D6 roll " + j + ": " + ccRoll);
+                                    }
+                                    ccRolls.splice(smallestElIndex(ccRolls),1);
+                                    roll = arraySum(ccRolls);
+                                    console.log('Result: ' + ccRolls.join('+') + '=' + roll);
+                                    break;
+                                case "custom":
+                                    roll = randomNumber(1,customDice);
+                                    break;
+                                default:
+                                    roll = randomNumber(1,dice);
+                                    break;
+                            }
+                            allRolls.push(Number(roll));
+                        }
+                        var result = arraySum(allRolls);
+                        result += (addTo == "final") ? add:add*count;
+                        display.innerHTML = result;
+                        if(dice == "custom"){
+                            dice = customDice;
+                            toggleCustom();
+                        }
+                        logRoll(result,allRolls,dice);
+                    }
+                    else {
+                        dFeedback.innerHTML = "You have entered invalid values. Please keep the numbers whole and positive.";
+                    }
+                }
+                
+                //Hiding the custom dice panel
+                $('#customDice_div').hide();
+                
+                //Adding the show/hide function for the custom dice panel to the custom dice button
+                function toggleCustom() {
+                    $('#customDice_div').slideToggle(200);
+                }
+                $('#toggleCustom').click(function(){toggleCustom();});
+            </script>
+        </div>
+    </body>
+</html>

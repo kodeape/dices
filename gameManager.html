@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Game Manager</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <link href='https://fonts.googleapis.com/css?family=Satisfy' rel='stylesheet'>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+        <link rel="icon" href="https://pbs.twimg.com/profile_images/1458267247/icon-hashtag_400x400.png">
+        <style>
+            body {background-color: #A5F5EE;}
+            #content {width: 80%; border-radius: 5px; margin: auto; margin-top: 15px; background-color: #FFFFFF; padding: 15px; text-align: center; font-family: "Century Gothic",sans-serif;}
+            
+            h1 {font-size: 5em; font-family: "Satisfy","Century Gothic",sans-serif;} 
+            
+            .centGoth {font-family: "Century Gothic",sans-serif;}
+        </style>
+    </head>
+    <body>
+        <div id="content">
+            <h1>Dices!!! Game Manager</h1>
+            <div id="startScreen">
+                <p>If you have a game file (dices_data.txt), please upload it:
+                <input id="file_inp" type="file" accept="text/plain"></p>
+                <p>If not, create your first game here: <button>New game</button></p>
+            </div>
+            <div id="newGame">
+                Game name: <input id="gameName">
+                How many characters does your game have? <input id="charAmnt" type="number">
+                <div id="charSlots"></div>
+            </div>
+            
+        </div>
+        <script>
+            $(document).ready(function() {
+                
+                function addCharacterSlot(num){
+                    var slotDiv = document.getElementById('charSlots');
+                    var charDiv = document.createElement('div');
+                    charDiv.setAttribute('id','char' + num);
+                    charDiv.setAttribute('class','charDiv');
+                    charDiv.innerHTML = "Character " + num + "<br>";
+                    charDiv.innerHTML += "Name: ";
+                    var nameInp = document.createElement('input');
+                    nameInp.setAttribute('id','inp' + num);
+                    nameInp.setAttribute('class','nameInp');
+                }
+                
+                var textLines = [];
+                var games = [];
+                
+                function Game(index,name,characters){
+                    this.index = index;
+                    this.name = name;
+                    this.characters = characters;
+                }
+                
+                function Character(name,age){
+                    this.name = name;
+                    this.age = age;
+                }
+                
+                function openFile(event){
+                    var input = event.target;
+                    var reader = new FileReader();
+                    reader.readAsText(input.files[0]);
+                    reader.onload = function(){
+                        var text = reader.result;
+                        textLines = text.split('\r\n');
+                        manageFile();
+                    }
+                }
+                
+                function findGroupIntervals(groupName,from,to){
+                    var intervals = [];
+                    var endSearch = (to < textLines.length) ? to:textLines.length;
+                    for(var start = from; start < endSearch; start++){
+                        if(textLines[start] == groupName){
+                            for(var end = start; end < textLines.length; end++){
+                                if(textLines[end] == "/" + groupName){
+                                    intervals.push([start,end]);
+                                    start = end;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    return intervals;
+                }
+                
+                function gameCharacters(start,end){
+                    var characterIntervals = findGroupIntervals('CHARACTER',start,end);
+                    var characters = [];
+                    for(var i = 0; i < characterIntervals.length; i++){
+                        var name = textLines[characterIntervals[i][0]+1];
+                        var age = textLines[characterIntervals[i][0]+2];
+                        characters[i] = new Character(name,age);
+                    }
+                    return characters;
+                }
+                
+                function manageFile(){
+                    var gameIntervals = findGroupIntervals('GAME',0,textLines.length);
+                    for(var i = 0; i < gameIntervals.length; i++){
+                        var gameInterval = gameIntervals[i];
+                        var gameName = textLines[gameInterval[0]+1];
+                        var gameChars = gameCharacters(gameInterval[0],gameInterval[1]);
+                        games[i] = new Game(i,gameName,gameChars);
+                    }
+                    console.log(games);
+                }
+                
+                document.getElementById('file_inp').addEventListener('change', function(event){openFile(event);});
+                
+                function textFile(){
+                  var fileContent = "";
+                    for(var i = 0; i < games.length; i++){
+                        var game = games[i];
+                        fileContent += "GAME\r\n";
+                        fileContent += game.name + "\r\n";
+                        for(var j = 0; j < game.characters.length; j++){
+                            var character = game.characters[j];
+                            fileContent += "CHARACTER\r\n";
+                            fileContent += character.name + "\r\n";
+                            fileContent += character.age + "\r\n";
+                            fileContent += "/CHARACTER\r\n";
+                        }
+                        fileContent += "/GAME\r\n";
+                    }
+                    return fileContent;
+                }
+                
+                function showFile(){
+                    var display = document.getElementById('fileContent');
+                    display.innerHTML = "";
+                    var fileLines = textFile().split('\r\n');
+                    for(var i = 0; i < fileLines.length; i++){
+                        display.innerHTML += fileLines[i] + "<br>";
+                    }
+                }
+                
+                function downloadFile() {
+                    var element = document.createElement('a');
+                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textFile()));
+                    element.setAttribute('download', 'dices_data');
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                }
+                
+                /*document.getElementById('show').addEventListener('click',function(){
+                    showFile();
+                });
+                
+                document.getElementById('download').addEventListener('click',function(){
+                    downloadFile();
+                });*/
+            });
+        </script>
+    </body>
+</html>

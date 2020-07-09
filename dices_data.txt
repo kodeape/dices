@@ -1,0 +1,22 @@
+GAME
+DnD w/ frens
+CHARACTER
+Sera Bough
+18
+/CHARACTER
+CHARACTER
+Fehrana Rythwar
+19
+/CHARACTER
+/GAME
+GAME
+Second
+CHARACTER
+Sera Bough
+18
+/CHARACTER
+CHARACTER
+Fehrana Rythwar
+19
+/CHARACTER
+/GAME
